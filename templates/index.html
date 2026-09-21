@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="SpamShield - Check whether a message is spam using machine learning."
+    >
+
+    <title>SpamShield | Spam Message Detector</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+    <!-- Background decoration -->
+    <div class="background-effects" aria-hidden="true">
+        <div class="blob blob-one"></div>
+        <div class="blob blob-two"></div>
+        <div class="grid"></div>
+    </div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <a href="/" class="brand">
+            <div class="brand-icon">
+                <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                >
+                    <path
+                        d="M12 3L19 6V11C19 15.5 16.2 19.2 12 21C7.8 19.2 5 15.5 5 11V6L12 3Z"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linejoin="round"
+                    />
+                    <path
+                        d="M9 12L11 14L15.5 9.5"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </div>
+
+            <div>
+                <span class="brand-name">SpamShield</span>
+                <span class="brand-subtitle">ML Message Scanner</span>
+            </div>
+        </a>
+
+        <div class="model-status" id="modelStatus">
+            <span class="status-dot"></span>
+            <span id="statusText">Checking model...</span>
+        </div>
+    </header>
+
+
+    <main class="page">
+
+        <!-- Hero -->
+        <section class="hero">
+
+            <div class="hero-badge">
+                <span>✦</span>
+                MACHINE LEARNING POWERED
+            </div>
+
+            <h1>
+                Is that message
+                <span class="gradient-text">safe?</span>
+            </h1>
+
+            <p class="hero-description">
+                Paste a suspicious message below and let the machine learning
+                model analyze whether it looks like spam or a legitimate message.
+            </p>
+
+            <div class="feature-pills">
+                <span>⚡ Instant analysis</span>
+                <span>🔒 Runs locally</span>
+                <span>📊 Confidence score</span>
+            </div>
+
+        </section>
+
+
+        <!-- Main app -->
+        <section class="app-layout">
+
+            <!-- Input card -->
+            <article class="card scanner-card">
+
+                <div class="card-heading">
+                    <div>
+                        <p class="eyebrow">MESSAGE SCANNER</p>
+                        <h2>Analyze a message</h2>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="clear-button"
+                        id="clearButton"
+                        title="Clear message"
+                    >
+                        Clear
+                    </button>
+                </div>
+
+
+                <form id="spamForm">
+
+                    <div class="textarea-wrapper">
+
+                        <textarea
+                            id="messageInput"
+                            placeholder="Paste your message here...
+
+Example: Congratulations! You have won a FREE prize. Click here to claim it now!"
+                            maxlength="5000"
+                            autocomplete="off"
+                            required
+                        ></textarea>
+
+                        <div class="textarea-footer">
+                            <span class="keyboard-tip">
+                                Ctrl + Enter to analyze
+                            </span>
+
+                            <span id="characterCount">
+                                0 / 5000
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="analyze-button"
+                        id="analyzeButton"
+                    >
+                        <span class="button-content" id="buttonContent">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M4 12H20M14 6L20 12L14 18"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
+
+                            Analyze Message
+                        </span>
+
+                        <span
+                            class="button-loading hidden"
+                            id="buttonLoading"
+                        >
+                            <span class="spinner"></span>
+                            Analyzing...
+                        </span>
+                    </button>
+
+                </form>
+
+
+                <!-- Examples -->
+                <div class="examples">
+
+                    <div class="examples-heading">
+                        <span>Not sure what to try?</span>
+                        <span class="examples-line"></span>
+                    </div>
+
+                    <div class="example-grid">
+
+                        <button
+                            type="button"
+                            class="example-button spam-example"
+                            data-message="Congratulations! You have won a free iPhone. Click the link now to claim your prize before it expires!"
+                        >
+                            <span class="example-icon">🎁</span>
+
+                            <span>
+                                <strong>Prize message</strong>
+                                <small>Try a suspicious example</small>
+                            </span>
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="example-button normal-example"
+                            data-message="Hey, are we still meeting for lunch tomorrow at 1 PM? Let me know what restaurant works for you."
+                        >
+                            <span class="example-icon">💬</span>
+
+                            <span>
+                                <strong>Normal message</strong>
+                                <small>Try a regular conversation</small>
+                            </span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+
+            <!-- Result card -->
+            <article class="card result-card">
+
+                <!-- Empty state -->
+                <div class="empty-result" id="emptyResult">
+
+                    <div class="scan-visual">
+                        <div class="scan-circle">
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M12 3L19 6V11C19 15.5 16.2 19.2 12 21C7.8 19.2 5 15.5 5 11V6L12 3Z"
+                                    stroke="currentColor"
+                                    stroke-width="1.6"
+                                    stroke-linejoin="round"
+                                />
+                                <path
+                                    d="M9 12H15"
+                                    stroke="currentColor"
+                                    stroke-width="1.6"
+                                    stroke-linecap="round"
+                                />
+                            </svg>
+                        </div>
+
+                        <div class="scan-ring"></div>
+                    </div>
+
+                    <h3>Your result will appear here</h3>
+
+                    <p>
+                        Enter a message and click
+                        <strong>Analyze Message</strong>
+                        to see the prediction.
+                    </p>
+
+                </div>
+
+
+                <!-- Prediction result -->
+                <div class="prediction-result hidden" id="predictionResult">
+
+                    <p class="eyebrow">ANALYSIS RESULT</p>
+
+                    <div class="result-title-area">
+
+                        <div
+                            class="result-icon"
+                            id="resultIcon"
+                        ></div>
+
+                        <div>
+                            <p class="result-caption">
+                                This message is classified as
+                            </p>
+
+                            <h2 id="predictionLabel">
+                                Spam
+                            </h2>
+                        </div>
+
+                    </div>
+
+
+                    <div class="confidence-section">
+
+                        <div class="confidence-header">
+                            <span>Prediction confidence</span>
+                            <strong id="confidenceValue">--</strong>
+                        </div>
+
+                        <div class="confidence-track">
+                            <div
+                                class="confidence-fill"
+                                id="confidenceFill"
+                            ></div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="probabilities">
+
+                        <div class="probability-box">
+                            <div class="probability-heading">
+                                <span class="probability-dot spam-dot"></span>
+                                Spam probability
+                            </div>
+
+                            <strong id="spamProbability">
+                                --
+                            </strong>
+                        </div>
+
+
+                        <div class="probability-box">
+                            <div class="probability-heading">
+                                <span class="probability-dot safe-dot"></span>
+                                Not spam probability
+                            </div>
+
+                            <strong id="hamProbability">
+                                --
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="recommendation"
+                        id="recommendation"
+                    >
+                    </div>
+
+
+                    <details class="processed-details">
+
+                        <summary>
+                            View processed message
+                        </summary>
+
+                        <div class="processed-content">
+                            <code id="processedText"></code>
+                        </div>
+
+                    </details>
+
+                </div>
+
+
+                <!-- Error state -->
+                <div class="error-result hidden" id="errorResult">
+
+                    <div class="error-icon">
+                        !
+                    </div>
+
+                    <h3>Something went wrong</h3>
+
+                    <p id="errorMessage">
+                        Unable to analyze the message.
+                    </p>
+
+                    <button
+                        type="button"
+                        class="try-again-button"
+                        id="tryAgainButton"
+                    >
+                        Try again
+                    </button>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- How it works -->
+        <section class="how-section">
+
+            <div class="section-heading">
+                <p class="eyebrow">HOW IT WORKS</p>
+                <h2>Three steps. One quick answer.</h2>
+            </div>
+
+
+            <div class="steps">
+
+                <article class="step-card">
+                    <div class="step-number">01</div>
+
+                    <div class="step-icon">✎</div>
+
+                    <h3>Enter a message</h3>
+
+                    <p>
+                        Paste any SMS, email text, or suspicious message into
+                        the scanner.
+                    </p>
+                </article>
+
+
+                <article class="step-card">
+                    <div class="step-number">02</div>
+
+                    <div class="step-icon">⌁</div>
+
+                    <h3>ML analysis</h3>
+
+                    <p>
+                        The text is preprocessed and passed through the trained
+                        classification model.
+                    </p>
+                </article>
+
+
+                <article class="step-card">
+                    <div class="step-number">03</div>
+
+                    <div class="step-icon">✓</div>
+
+                    <h3>See the result</h3>
+
+                    <p>
+                        Get the predicted category, probability, and model
+                        confidence instantly.
+                    </p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- Info note -->
+        <section class="notice">
+
+            <div class="notice-icon">i</div>
+
+            <p>
+                <strong>Educational project.</strong>
+                Machine learning predictions are not guaranteed to be correct.
+                Treat the result as guidance rather than a definitive security
+                decision.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+
+        <p>
+            Built with
+            <span>Python</span>,
+            <span>Flask</span>,
+            <span>NLTK</span>
+            and
+            <span>Machine Learning</span>.
+        </p>
+
+    </footer>
+
+
+    <div
+        class="toast"
+        id="toast"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+
+    <script
+        src="{{ url_for('static', filename='app.js') }}"
+    ></script>
+
+</body>
+</html>
